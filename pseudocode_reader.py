@@ -368,11 +368,11 @@ def Get_Variable_Value(line, variable_begins, variable_list):
 
 
 def Process_Variable(line, var_start):
-
+    pass # this was making my ide cry 
 
 
 def Process_Condition(lines, line_stop, variable_list):
-    temp_line = lines[line_stop]\
+    temp_line = lines[line_stop]
     temp_line = temp_line[2:] #remove 'if'
     while temp_line[0] == ' ':
         temp_line = temp_line[1:]
@@ -452,6 +452,9 @@ def Main_Program(lines):
         line_stop += 1
         if line_stop >= program_end:
             break
-lines = Read_File('C:\\Users\\ryanc\\Dropbox\\Python\\tester.txt')
-print(lines)
-Main_Program(lines)
+
+
+if __name__ == '__main__':
+    lines = Read_File('C:\\Users\\ryanc\\Dropbox\\Python\\tester.txt')
+    print(lines)
+    Main_Program(lines)
