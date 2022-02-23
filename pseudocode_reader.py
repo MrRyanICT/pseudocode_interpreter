@@ -268,7 +268,7 @@ def GetInput(data_type):
     return value
 
 
-def Process_Input(line, variable_list):
+def Process_Input(line, variable_list) -> list:  # i really have no clue what is returned here, assuming its a list
     temp_line = line[5:]
     while True:
 
@@ -354,6 +354,8 @@ def Process_Input(line, variable_list):
         exit(0)
 
     return variable_list
+
+
 def Get_Variable_Value(line, variable_begins, variable_list):
     var_start = variable_begins
     var_end = variable_begins
@@ -371,7 +373,7 @@ def Process_Variable(line, var_start):
     pass # this was making my ide cry 
 
 
-def Process_Condition(lines, line_stop, variable_list):
+def Process_Condition(lines, line_stop, variable_list) -> None:
     temp_line = lines[line_stop]
     temp_line = temp_line[2:] #remove 'if'
     while temp_line[0] == ' ':
@@ -412,6 +414,28 @@ def Process_Condition(lines, line_stop, variable_list):
                 pass
 
 
+
+
+def loop_eval(lines:list, type: str, _cond=None):
+    if type == 'while':
+        while _cond:
+            pass # eval code here
+    elif type == 'for':
+        for _ in _cond:
+            pass # eval code here
+        
+
+def line_eval(line, lines):
+    if line.startswith('output'):
+        Process_Output(line, variable_list)
+    elif line.startswith('input'):
+        variable_list = Process_Input(line, variable_list)
+        return variable_list
+    elif line.startswith('if'):
+        line_stop = Process_Condition(lines,line_stop, variable_list)
+        return line_stop
+
+
 def Main_Program(lines):
     program_start = 0
     #check for start
@@ -426,10 +450,13 @@ def Main_Program(lines):
                 break
         else:
             program_start += 1
+
             if program_start >= len(lines):
                 print(Fore.RED + Back.WHITE +'Error. No program start found')
                 return
+
     program_end = program_start + 1
+
     while True:
         if program_end >= len(lines):
             print(Fore.RED + Back.WHITE + 'Error. No program end found')
@@ -452,6 +479,7 @@ def Main_Program(lines):
         line_stop += 1
         if line_stop >= program_end:
             break
+
 
 
 if __name__ == '__main__':
