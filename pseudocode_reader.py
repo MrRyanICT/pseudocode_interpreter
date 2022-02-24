@@ -457,7 +457,7 @@ def psu_read_file(name:str) -> TextIO:
     return x
 
 # OPENFILE 'x.txt' FOR WRITE
-def psu_write_file(name:str) -> TextIO
+def psu_write_file(name:str) -> TextIO:
     x = open(name, 'w')
     file_pool[name] = x
     return x
