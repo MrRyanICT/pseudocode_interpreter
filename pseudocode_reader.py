@@ -13,12 +13,21 @@ class Variable:
         self.array_index_end = 0
         self.array_data_type = ''
 
+
+
 import copy
+
+from typing import Dict, Tuple, Union, List, TextIO
 import string
 import re
 ALPHA = string.ascii_letters
 from colorama import init, Fore, Back, Style
 init()
+
+
+
+file_pool:Dict[str, TextIO] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
+
 
 def Read_File(file_extension):
     file = open(file_extension, 'r')
@@ -30,8 +39,9 @@ def Read_File(file_extension):
         # ^^ makes everything lowercase except text within ""
     return lines
 
-def Handle_Variables(lines, code_start, code_end):
+def Handle_Variables(lines: list, code_start: int, code_end: int) -> Tuple[List[Variable], int]:
     # find variables
+    # evals the total code then adds to variable_list
     variable_list = []
     line_stop = code_end-1
     for counter in range(code_start, code_end):
@@ -416,7 +426,7 @@ def Process_Condition(lines, line_stop, variable_list) -> None:
 
 
 
-def loop_eval(lines:list, type: str, _cond=None):
+def loop_eval(loops_lines:list, type: str, _cond=None):
     if type == 'while':
         while _cond:
             pass # eval code here
@@ -425,7 +435,7 @@ def loop_eval(lines:list, type: str, _cond=None):
             pass # eval code here
         
 
-def line_eval(line, lines):
+def line_eval(line, lines, variable_list: List[Variable]) -> Union[List[Variable], int]:
     if line.startswith('output'):
         Process_Output(line, variable_list)
     elif line.startswith('input'):
@@ -434,6 +444,28 @@ def line_eval(line, lines):
     elif line.startswith('if'):
         line_stop = Process_Condition(lines,line_stop, variable_list)
         return line_stop
+    elif line.startswith('while'):
+        # check for another loop
+        # check for endwhile
+        
+        loop_eval()
+
+# OPENFILE 'x.txt' FOR READ
+def psu_read_file(name:str) -> TextIO:
+    x = open(name, 'r')
+    file_pool[name] = x
+    return x
+
+# OPENFILE 'x.txt' FOR WRITE
+def psu_write_file(name:str) -> TextIO
+    x = open(name, 'w')
+    file_pool[name] = x
+    return x
+
+# CLOSEFILE 'x.txt'
+def psu_close_file(name:str) -> None:
+    file_pool[name].close()
+
 
 
 def Main_Program(lines):
@@ -467,7 +499,7 @@ def Main_Program(lines):
             program_end += 1
 
 
-    variable_list, line_stop = Handle_Variables(lines, program_start + 1, program_end)
+    variable_list, line_stop = Handle_Variables(lines, program_start + 1, program_end) # fetches all declares and variables
 
     while True: #run program
         if lines[line_stop].startswith('output'):
