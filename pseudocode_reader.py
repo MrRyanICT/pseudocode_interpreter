@@ -29,6 +29,9 @@ init()
 file_pool:Dict[str, TextIO] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
 
 
+
+
+
 def Read_File(file_extension):
     file = open(file_extension, 'r')
     lines = []
@@ -38,6 +41,81 @@ def Read_File(file_extension):
         lines.append(re.sub(r'\b(?<!")(\w+)(?!")\b', lambda match: match.group(1).lower(), temp))
         # ^^ makes everything lowercase except text within ""
     return lines
+
+
+def LEFT(ThisString: str, x :int) -> str:
+    return ThisString[:x]
+
+def RIGHT(ThisString: str, x :int) -> str:
+    return ThisString[x:]
+
+def MID(ThisString: str, x :int, y: int) -> str:
+    return ThisString[x:x+y]
+
+def LENGTH(ThisString: str) -> int:
+    return len(ThisString)
+
+def LCASE(ThisString: str) -> str:
+    if len(ThisString) != 1:
+        raise Exception("ERROR: CHAR type not given")
+    return ThisString.lower()
+
+def UCASE(ThisString: str) -> str:
+    if len(ThisString) != 1:
+        raise Exception("ERROR: CHAR type not given")
+    return ThisString.upper()
+
+def TO_UPPER(ThisString: str) -> str:
+    return ThisString.upper()
+
+def TO_LOWER(ThisString: str) -> str:
+    return ThisString.lower()
+
+def NUM_TO_STR(x: Union[int, float]) -> str:
+    return str(x)
+
+def STR_TO_NUM(x: str) -> Union[int, float]:
+    if '.' in x:
+        return float(x)
+    else:
+        return int(x)
+    
+def IS_NUM(ThisString: str) -> bool:
+    try:
+        float(ThisString)
+        return True
+    except ValueError:
+        return False
+
+def ASC(ThisChar: str) -> int:
+    if len(ThisChar) != 1:
+        raise Exception("ERROR: CHAR type not given")
+    return ord(ThisChar)
+
+
+def _CHR(x: int) -> str:
+    try:
+        y = chr(x)
+        return y
+    except Exception as e:
+        raise e
+
+
+def _INT(x: float) -> int:
+    return int(x)
+
+def RAND(x: int) -> float:
+    from random import uniform
+    return uniform(0.0, float(x))
+
+
+
+
+
+
+def Handle_Function(_func: str, *param):
+    pass
+
 
 def Handle_Variables(lines: list, code_start: int, code_end: int) -> Tuple[List[Variable], int]:
     # find variables
@@ -515,6 +593,6 @@ def Main_Program(lines):
 
 
 if __name__ == '__main__':
-    lines = Read_File('C:\\Users\\ryanc\\Dropbox\\Python\\tester.txt')
+    lines = Read_File('tester.txt')
     print(lines)
     Main_Program(lines)
