@@ -1,12 +1,10 @@
 
 begin
-DECLARE counter, temp : INTEGER
 DECLARE answer : STRING
 
 OUTPUT "What is your name?"
 
 INPUT answer
-FOR counter <-- 1 TO LENGTH(answer) DO
-    OUTPUT "The ASCII value of " $ MID(answer, counter, 1) & " is " & ASC(MID(answer, counter, 1))
-ENDFOR
+OPENFILE "x.txt" FOR READ
+
 end

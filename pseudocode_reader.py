@@ -115,6 +115,7 @@ class PsuedoFuncs:
 class Interp:
 
     def __init__(self):
+        self.code = ''
         self.variable_list = []
         self.file_pool:Dict[str, TextIO] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
 
@@ -528,11 +529,18 @@ class Interp:
         elif line.startswith('if'):
             line_stop = self.Process_Condition(lines,line_stop, variable_list)
             return line_stop
-        elif line.startswith('while'):
-            # check for another loop
-            # check for endwhile
+
+        elif line.startswith('openfile'):
+            file_name = re.findall(r'"([^"]*)"', line)[0]
+            print(file_name)
+            if 'read' in line:
+                file = self.psu_read_file(file_name)
+        
+        # elif line.startswith('while'):
+        #     # check for another loop
+        #     # check for endwhile
             
-            self.loop_eval()
+        #     self.loop_eval()
 
 
 
@@ -557,6 +565,7 @@ class Interp:
 
 
     def Main_Program(self, lines):
+        self.code = lines
         program_start = 0
         #check for start
         while True:
@@ -590,12 +599,15 @@ class Interp:
         variable_list, line_stop = self.Handle_Variables(lines, program_start + 1, program_end) # fetches all declares and variables
 
         while True: #run program
-            if lines[line_stop].startswith('output'):
-                self.Process_Output(lines[line_stop], variable_list)
-            elif lines[line_stop].startswith('input'):
-                variable_list = self.Process_Input(lines[line_stop], variable_list)
-            elif lines[line_stop].startswith('if'):
-                line_stop = self.Process_Condition(lines,line_stop, variable_list)
+            self.line_eval(lines[line_stop], lines, self.variable_list)
+            # if lines[line_stop].startswith('output'):
+            #     self.Process_Output(lines[line_stop], self.variable_list)
+            # elif lines[line_stop].startswith('input'):
+            #     self.variable_list = self.Process_Input(lines[line_stop], self.variable_list)
+            # elif lines[line_stop].startswith('if'):
+            #     line_stop = self.Process_Condition(lines,line_stop, self.variable_list)
+
+
             line_stop += 1
             if line_stop >= program_end:
                 break
