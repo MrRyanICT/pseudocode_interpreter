@@ -375,7 +375,6 @@ class Interp:
     def Process_Input(self, line, variable_list) -> list:  # i really have no clue what is returned here, assuming its a list
         temp_line = line[5:]
         while True:
-
             while temp_line[0] == ' ':
                 temp_line = temp_line[1:]
 
@@ -527,6 +526,12 @@ class Interp:
         elif type == 'for':
             for _ in _cond:
                 pass # eval code here
+
+        elif type == 'until':
+            while True:
+                pass # eval code here
+                if not _cond:
+                    break
             
 
     def line_eval(self, line, lines, variable_list: List[Variable]) -> Union[List[Variable], int]:
@@ -551,6 +556,21 @@ class Interp:
             file_name = re.findall(r'"([^"]*)"', line)[0]
             self.psu_close_file(file_name)
         
+        elif line.startswith('readfile'):
+            file_name = re.findall(r'"([^"]*)"', line)[0]
+            var_name = re.findall(r'"([^"]*)"', line)[1]
+
+            self.psu_readfile(file_name, var_name)
+
+        elif line.startswith('writefile'):
+            file_name = re.findall(r'"([^"]*)"', line)[0]
+            var_name = re.findall(r'"([^"]*)"', line)[1]
+            self.psu_writefile(file_name, var_name)
+        
+        
+
+
+
         # elif line.startswith('while'):
         #     # check for another loop
         #     # check for endwhile
@@ -583,19 +603,24 @@ class Interp:
     # READLINE <file name>.txt, <var_name>
     def psu_readfile(self, file_name:str, var_name:str) -> None:
         file = self.file_pool[file_name]
-        file_index = file.curr_line
-        file_obj = file.obj
-        lines = file_obj.readlines()
-        for i in self.variable_list:
-            if i.variable_name == var_name:
-                variable_values = lines[file_index]
-                file.curr_line += 1
-                return
+        if file.mode == 'read':
+            file_index = file.curr_line
+            file_obj = file.obj
+            lines = file_obj.readlines()
+            for i in self.variable_list:
+                if i.variable_name == var_name:
+                    variable_values = lines[file_index]
+                    file.curr_line += 1
+                    return
+        else:
+            raise Exception("Unable to read file opened with write")
     
 
     # EOF(FILE_NAME)
     def psu_eof(self, file_name:str) -> bool:
         file = self.file_pool[file_name]
+        if file.mode == 'write':
+            return True # always true as the writer is always at the end of the file
         if file.curr_line >= len(file.obj.readlines()):
             return True
         else:
