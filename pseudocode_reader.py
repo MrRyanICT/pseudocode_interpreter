@@ -111,13 +111,22 @@ class PsuedoFuncs:
         return uniform(0.0, float(x))
 
 
+class obj_file:
+    def __init__(self, obj: TextIO, mode: str) -> None:
+        """
+        curr_line is a counter for READLINE (psu_readline)
+        obj is the TextIO object
+        """
+        self.curr_line = 0
+        self.obj = obj
+        self.mode
 
 class Interp:
 
     def __init__(self):
         self.code = ''
         self.variable_list = []
-        self.file_pool:Dict[str, TextIO] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
+        self.file_pool:Dict[str, obj_file] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
 
 
     def Handle_Function(_func: str, *param):
@@ -535,6 +544,12 @@ class Interp:
             print(file_name)
             if 'read' in line:
                 file = self.psu_read_file(file_name)
+            elif 'write' in line:
+                file = self.psu_write_file(file_name)
+        
+        elif line.startswith('closefile'):
+            file_name = re.findall(r'"([^"]*)"', line)[0]
+            self.psu_close_file(file_name)
         
         # elif line.startswith('while'):
         #     # check for another loop
@@ -549,19 +564,51 @@ class Interp:
     # OPENFILE 'x.txt' FOR READ
     def psu_read_file(self, name:str) -> TextIO:
         x = open(name, 'r')
-        self.file_pool[name] = x
-        return x
+        file = obj_file(x, 'read')
+        self.file_pool[name] = file
+        return file
 
     # OPENFILE 'x.txt' FOR WRITE
     def psu_write_file(self, name:str) -> TextIO:
         x = open(name, 'w')
-        self.file_pool[name] = x
-        return x
+        file = obj_file(x, 'write')
+        self.file_pool[name] = file
+        return file
 
     # CLOSEFILE 'x.txt'
     def psu_close_file(self, name:str) -> None:
-        self.file_pool[name].close()
+        self.file_pool[name].obj.close()
+        self.file_pool.pop(name)
 
+    # READLINE <file name>.txt, <var_name>
+    def psu_readfile(self, file_name:str, var_name:str) -> None:
+        file = self.file_pool[file_name]
+        file_index = file.curr_line
+        file_obj = file.obj
+        lines = file_obj.readlines()
+        for i in self.variable_list:
+            if i.variable_name == var_name:
+                variable_values = lines[file_index]
+                file.curr_line += 1
+                return
+    
+
+    # EOF(FILE_NAME)
+    def psu_eof(self, file_name:str) -> bool:
+        file = self.file_pool[file_name]
+        if file.curr_line >= len(file.obj.readlines()):
+            return True
+        else:
+            return True
+
+    # WRITEFILE <file name>.txt, <string>
+    def psu_writefile(self, file_name:str, to_write:str) -> None:
+        file = self.file_pool[file_name]
+        if file.mode == 'write':
+            file.obj.write(to_write)
+            file.curr_line += 1
+        else:
+            raise Exception("Unable to write to a file opened with read")
 
 
     def Main_Program(self, lines):
