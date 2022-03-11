@@ -126,8 +126,9 @@ class Interp:
     def __init__(self):
         self.code = ''
         self.variable_list = []
+        self.ifs: Dict[int, List[str]] = {} # {line (integer): [if, elif, elif, else, bool (true = Else exists)]}
         self.file_pool:Dict[str, obj_file] = {} # this stores .txt objects format: {FILE_NAME: FILE_OBJECT}
-
+        
 
     def Handle_Function(_func: str, *param):
         pass
@@ -138,7 +139,22 @@ class Interp:
         # evals the total code then adds to variable_list
         self.variable_list = []
         line_stop = code_end-1
+        
         for counter in range(code_start, code_end):
+            # if handler
+            if lines[counter].startswith('if'):
+                self.ifs[i] = []
+                for i in range(counter, code_end):
+                    if i.startwith('elif'):
+                        self.ifs[i].append(i)
+                    elif i.startswith('else'):
+                        self.ifs[i].append(True)
+                        break
+                    elif i.startswith('endif'):
+                        if type(self.ifs[i][-1]) is not bool:
+                            self.ifs[i].append(False)
+                        break
+            # end of if handler
             if lines[counter].startswith('declare'):
                 new_variable = Variable()
                 if ':' not in lines[counter]:
@@ -518,31 +534,67 @@ class Interp:
 
 
 
+    def condition_eval(self, statement: str) -> bool:
+        # check for AND, OR
+        # False and True or False and True or True evals to TRUE
+
+        # (False and True) or (False and True) or (True)
+        # (False and True) or ((not False) and True and True) or (False) -> True
+
+        vars_cons = statement.split(' ')
+        vars_cons = [i for i in vars_cons if i != '']
+        if vars_cons[0] == 'or' or vars_cons[0] == 'and':
+            raise Exception('Incorrect condition syntaxing')
+        
+        
+        
+        # note: we can use eval() to directly use python's eval engine instead of writing our own
+        for i in vars_cons:
+            variables = {}
+            if i not in ['or', 'and', 'not']:
+                for v in self.variable_list:
+                    if v.variable_name == i:
+                        variables[i] = v.variable_values
+        total_cond = ' '.join(vars_cons)
+        return eval(total_cond, None, variables)
+
+
 
     def loop_eval(self, loops_lines:list, type: str, _cond=None):
         if type == 'while':
-            while _cond:
+            while True:
+                if not self.condition_eval(_cond):
+                    break
+
                 pass # eval code here
+            
         elif type == 'for':
-            for _ in _cond:
+            for _ in self.condition_eval(_cond): # i dont think this works
                 pass # eval code here
 
         elif type == 'until':
             while True:
                 pass # eval code here
-                if not _cond:
+                if not self.condition_eval(_cond):
                     break
             
 
-    def line_eval(self, line, lines, variable_list: List[Variable]) -> Union[List[Variable], int]:
+    def line_eval(self, line: str, lines, variable_list: List[Variable], line_stop: int) -> Union[List[Variable], int]:
         if line.startswith('output'):
             self.Process_Output(line, variable_list)
         elif line.startswith('input'):
             variable_list = self.Process_Input(line, variable_list)
             return variable_list
+
+
         elif line.startswith('if'):
-            line_stop = self.Process_Condition(lines,line_stop, variable_list)
-            return line_stop
+            # need to redo this
+            # line_stop = self.Process_Condition(lines,line_stop, variable_list)
+            # return line_stop
+            # IF x == y OR x == [1,2,3] THEN
+            cond = line.replace('if', '').replace('then', '').strip()
+            return self.condition_eval(cond)
+
 
         elif line.startswith('openfile'):
             file_name = re.findall(r'"([^"]*)"', line)[0]
@@ -609,7 +661,7 @@ class Interp:
             lines = file_obj.readlines()
             for i in self.variable_list:
                 if i.variable_name == var_name:
-                    variable_values = lines[file_index]
+                    i.variable_values = lines[file_index]
                     file.curr_line += 1
                     return
         else:
@@ -671,7 +723,7 @@ class Interp:
         variable_list, line_stop = self.Handle_Variables(lines, program_start + 1, program_end) # fetches all declares and variables
 
         while True: #run program
-            self.line_eval(lines[line_stop], lines, self.variable_list)
+            self.line_eval(lines[line_stop], lines, self.variable_list, line_stop)
             # if lines[line_stop].startswith('output'):
             #     self.Process_Output(lines[line_stop], self.variable_list)
             # elif lines[line_stop].startswith('input'):
@@ -686,8 +738,12 @@ class Interp:
 
 
 
-if __name__ == '__main__':
+if __name__ == '__main__1':
     interpreter = Interp()
     lines = Read_File('tester.txt')
     print(lines)
     interpreter.Main_Program(lines)
+
+if __name__ == '__main__':
+    interpreter = Interp()
+    interpreter.condition_eval("   why AND   HOW  OR WHAT")

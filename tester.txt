@@ -5,6 +5,10 @@ DECLARE answer : STRING
 OUTPUT "What is your name?"
 
 INPUT answer
-OPENFILE "x.txt" FOR READ
+IF answer == "joe" THEN
+    OUTPUT "ok"
+ELSE
+    OUTPUT "noob"
+
 
 end
