@@ -676,7 +676,7 @@ class Interp:
         if file.curr_line >= len(file.obj.readlines()):
             return True
         else:
-            return True
+            return False
 
     # WRITEFILE <file name>.txt, <string>
     def psu_writefile(self, file_name:str, to_write:str) -> None:
