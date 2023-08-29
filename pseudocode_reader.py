@@ -119,7 +119,7 @@ class obj_file:
         """
         self.curr_line = 0
         self.obj = obj
-        self.mode
+        self.mode = mode
 
 class Interp:
 
